@@ -1,8 +1,18 @@
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Nukitter.Web.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                       throw new InvalidOperationException("Connection string 'NukeItterContextConnection' not found.");
+
+builder.Services.AddDbContext<NukeItterContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddDefaultIdentity<NukeItterUser>(options => options.SignIn.RequireConfirmedAccount = true)
+  .AddEntityFrameworkStores<NukeItterContext>();
+
 builder.WebHost.ConfigureKestrel(options => {
   options.Listen(IPAddress.Any, 5001, listenOptions => {
     var certPem = File.ReadAllText("/etc/letsencrypt/live/dev.fergl.ie/fullchain.pem");
