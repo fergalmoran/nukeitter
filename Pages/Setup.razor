@@ -1,42 +1,66 @@
 ﻿@page "/setup"
+@using System.Security.Claims
 @inject NavigationManager _navigationManager
 
 <PageTitle>Twit Nuke</PageTitle>
 
 <div
-    class="container mx-auto flex flex-col md:flex-row items-center my-12 md:my-24">
-    <!--Left Col-->
-    <div
-        class="flex flex-col w-full lg:w-1/2 justify-center items-start pt-12 pb-24 px-6 group">
+  class="container mx-auto flex flex-col md:flex-row items-center my-12 md:my-24">
+  <!--Left Col-->
+  <div
+    class="flex flex-col w-full lg:w-1/2 justify-center items-start pt-12 pb-24 px-6 group">
+    <AuthorizeView>
+      <Authorized>
         <div class="group flex justify-center items-center">
-            <h1 class="font-bold text-3xl my-4 flx flex-row">
-                Let's get started
-            </h1>
+          <h1 class="font-bold text-3xl my-4 flx flex-row">
+            Let's get started
+          </h1>
         </div>
         <p class="leading-normal mb-4">
-            We need access to your Twitter account, promise we won't do anything icky!!
+          We need access to your Twitter account, promise we won't do anything icky!!
         </p>
         <button
-            @onclick="TwitterSignin"
-            href="/setup"
-            class="btn btn-outline btn-info gap-2">
-            <i class="fa-brands fa-twitter"></i>
-            Login to Twitter
+          @onclick="TwitterSignin"
+          href="/setup"
+          class="btn btn-outline btn-info gap-2">
+          <i class="fa-brands fa-twitter"></i>
+          Login to Twitter
         </button>
-    </div>
-    <!--Right Col-->
-    <div class="w-full lg:w-1/2 lg:py-6 text-center">
-        <img
-            src="/img/logo.svg"
-            alt="Radioactive"
-            class="fill-current text-gray-900 w-3/5 mx-auto"/>
-    </div>
+      </Authorized>
+      <NotAuthorized>
+        <h1 class="font-bold text-3xl my-4 flx flex-row">
+          Hey $"
+          @{@User.Identity.Name}
+          "
+          - let's get you setup
+        </h1>
+      </NotAuthorized>
+    </AuthorizeView>
+  </div >
+  <!--Right Col-->
+  <div class="w-full lg:w-1/2 lg:py-6 text-center">
+    <img
+      src="/img/logo.svg"
+      alt="Radioactive"
+      class="fill-current text-gray-900 w-3/5 mx-auto"/>
+  </div>
 </div>
 
 @code {
 
-    private void TwitterSignin() {
-        _navigationManager.NavigateTo("user/twitter", true);
-    }
+  [CascadingParameter]
+  private Task<AuthenticationState> auth { get; set; }
+
+  public ClaimsPrincipal User { get; set; }
+
+  protected override async Task OnInitializedAsync() {
+    var authState = await auth;
+    User = authState.User;
+  }
+
+
+  private void TwitterSignin() {
+    _navigationManager.NavigateTo("user/twitter", true);
+  }
 
 }
