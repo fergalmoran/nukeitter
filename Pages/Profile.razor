@@ -1,0 +1,31 @@
+﻿@page "/profile"
+@using System.Security.Claims
+@inject NavigationManager _navigationManager
+
+<PageTitle>Twit Nuke</PageTitle>
+
+<div
+    class="container mx-auto flex flex-col md:flex-row items-center my-12 md:my-24">
+    <h1>This is your profile</h1>
+    <div>@claim</div>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+
+    public Claim claim;
+
+    protected override async Task OnInitializedAsync() {
+        var authState = await authenticationState;
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated) {
+            claim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+        }
+        else {
+            _navigationManager.NavigateTo("/");
+        }
+    }
+}
